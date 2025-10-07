@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Personal Finance Planner</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 600px; margin: 2em auto; }
+  label { display: block; margin-top: 1em; }
+  input[type="text"], input[type="number"] { width: 100%; padding: 0.5em; }
+  button { margin-top: 1em; padding: 0.5em 1em; }
+  .expense-list { margin-top: 1em; }
+  .expense-item { display: flex; justify-content: space-between; margin: 0.5em 0; }
+  .results { margin-top: 2em; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<h1>Personal Finance Planner</h1>
+
+<label for="income">Monthly Income ($):</label>
+<input type="number" id="income" min="0" placeholder="Enter your monthly income" />
+
+<h2>Add Expense</h2>
+<label for="expenseName">Expense Name:</label>
+<input type="text" id="expenseName" placeholder="E.g., Rent, Food, Utilities" />
+<label for="expenseAmount">Expense Amount ($):</label>
+<input type="number" id="expenseAmount" min="0" placeholder="Enter amount" />
+<button id="addExpenseBtn">Add Expense</button>
+
+<div class="expense-list" id="expenseList"></div>
+
+<div class="results">
+  <p>Total Expenses: $<span id="totalExpenses">0</span></p>
+  <p>Remaining Balance: $<span id="remainingBalance">0</span></p>
+</div>
+
+<script>
+  const incomeInput = document.getElementById('income');
+  const expenseNameInput = document.getElementById('expenseName');
+  const expenseAmountInput = document.getElementById('expenseAmount');
+  const addExpenseBtn = document.getElementById('addExpenseBtn');
+  const expenseListDiv = document.getElementById('expenseList');
+  const totalExpensesSpan = document.getElementById('totalExpenses');
+  const remainingBalanceSpan = document.getElementById('remainingBalance');
+
+  let expenses = [];
+
+  function updateSummary() {
+    const income = parseFloat(incomeInput.value) || 0;
+    const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+    const remaining = income - totalExpenses;
+
+    totalExpensesSpan.textContent = totalExpenses.toFixed(2);
+    remainingBalanceSpan.textContent = remaining.toFixed(2);
+  }
+
+  function renderExpenses() {
+    expenseListDiv.innerHTML = '';
+    expenses.forEach((expense, index) => {
+      const div = document.createElement('div');
+      div.classList.add('expense-item');
+      div.innerHTML = `
+        <span>${expense.name}: $${expense.amount.toFixed(2)}</span>
+        <button onclick="removeExpense(${index})">Remove</button>
+      `;
+      expenseListDiv.appendChild(div);
+    });
+  }
+
+  function addExpense() {
+    const name = expenseNameInput.value.trim();
+    const amount = parseFloat(expenseAmountInput.value);
+
+    if (name === '') {
+      alert('Please enter an expense name.');
+      return;
+    }
+    if (isNaN(amount) || amount <= 0) {
+      alert('Please enter a valid expense amount greater than zero.');
+      return;
+    }
+
+    expenses.push({ name, amount });
+    expenseNameInput.value = '';
+    expenseAmountInput.value = '';
+    renderExpenses();
+    updateSummary();
+  }
+
+  function removeExpense(index) {
+    expenses.splice(index, 1);
+    renderExpenses();
+    updateSummary();
+  }
+
+  addExpenseBtn.addEventListener('click', addExpense);
+  incomeInput.addEventListener('input', updateSummary);
+
+  // Make removeExpense accessible globally for the button onclick
+  window.removeExpense = removeExpense;
+</script>
+
+</body>
+</html>
